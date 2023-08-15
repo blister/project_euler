@@ -13,7 +13,7 @@
  * @returns {number} highest.j - the second side of the product
  * @returns {number} highest.product - the palindromic return
  */
-export function find_palindrome(digits = 3) {
+function find_palindrome(digits = 3) {
 	// grab our max
 	const max_num = parseInt('9'.repeat(digits));	
 	let highest = { i: 0, j: 0, product: 0 };
@@ -38,7 +38,7 @@ export function find_palindrome(digits = 3) {
  * @param {number} number - number to check for "palindrome-yness"
  * @returns {boolean} - if it's a palindrome number or not
  */
-export function is_palindrome_number(number) {
+function is_palindrome_number(number) {
 	const num_str = number.toString().split('');
 
 	// we can immediately exit if we don't even have the possibility
@@ -69,3 +69,6 @@ export function is_palindrome_number(number) {
 	return false;
 }
 
+module.exports = {
+	find_palindrome, is_palindrome_number
+};
