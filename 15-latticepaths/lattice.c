@@ -32,7 +32,7 @@ void lattice(int n) {
 }
 
 int main(void) {
-	for ( int i = 1; i < 81; ++i ) {
+	for ( int i = 1; i < 1000; ++i ) {
 		lattice(i);	
 	}
 }
