@@ -1,0 +1,17 @@
+{
+  "name": "17-numstrings",
+  "version": "1.0.0",
+  "description": "",
+  "main": "numstrings.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node-qa"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-qa": "github:blister/node-qa"
+  }
+}

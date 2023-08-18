@@ -69,7 +69,7 @@ Number.prototype.toNumString = function() {
 String.prototype.letterLength = function() {
 	return this.replaceAll(' ', '').replaceAll('-', '').length;
 };
-
+/*
 console.log(
 	new Number(342).toNumString(),
 	new Number(342).toNumString().letterLength()
@@ -86,6 +86,6 @@ for ( let i = 1; i < 1001; ++i ) {
 }
 
 console.log(`Letters: ${letter_count}`);
-
+*/
 // numstrings.js, created: 2023-227-15 16:12
 

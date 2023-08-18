@@ -41,19 +41,48 @@ char *digit_string(int num) {
 }
 
 char *num_strings(int num) {
-	char out_string[size];
+	char *out_string = ""; 
+	char *digit_str = "";
 
-	out_string = digit_string(int num);
+	int max_digit;
 
-	strcat(out_string, digit_string(num));
+	// figure out first significant digit,
+	// add it to the string if it exists
+	int ones = num % 10;
+	digit_str = digit_string(ones);
+	if ( strlen(digit_str) != 0 ) {
+		strcat(out_string, digit_str);
+		num = num - ( num % 10 );
+	}
+
+	int tens = num % 100;
+	digit_str = digit_string(tens);
+	if ( strlen(digit_str) != 0 ) {
+		strcat(out_string, digit_str);
+		num = num - ( num % 100 );
+	}
+
+	int hundreds = num % 1000;
+	max_digit = num / 100;
+	digit_str = digit_string(hundreds);
+	if ( strlen(digit_str) != 0 ) {
+		strcat(out_string, digit_str);
+		num = num - ( num % 1000 );
+	} else {
+		digit_str = digit_string(max_digit);
+		if ( strlen(digit_str) != 0 ) {
+			strcat(out_string, digit_str);
+			num = num - ( num / 100 );
+		}
+	}
 
 	return out_string;	
 }
 
 int main(void) {
 	printf("%i = %s\n", 1, num_strings(1));
-	printf("%i = %s\n", 11, num_strings(11));
-	printf("%i = %s\n", 17, num_strings(17));
-	printf("%i = %s\n", 101, num_strings(101));
+	//printf("%i = %s\n", 11, num_strings(11));
+	//printf("%i = %s\n", 17, num_strings(17));
+	//printf("%i = %s\n", 101, num_strings(101));
 }
 
