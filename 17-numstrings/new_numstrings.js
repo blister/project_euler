@@ -14,10 +14,6 @@
  * (exclude hyphens and spaces)
  */
 
-// DEBUG = true will display the full AST for all operations
-// via console.log. Super fun and useful for debugging
-const DEBUG = false;
-
 const NUM_MAP = {
 //	0: null, // zero is never spelled out
 	1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five',
@@ -27,6 +23,29 @@ const NUM_MAP = {
 	20: 'twenty', 30: 'thirty', 40: 'forty', 50: 'fifty', 60: 'sixty',
 	70: 'seventy', 80: 'eighty', 90: 'ninety', 100: 'hundred',
 };
+
+// DEBUG true will display the full AST for all operations
+// via console.log. Super fun and useful for debugging
+let DEBUG = false;
+
+if ( process.argv.length > 2 ) {
+	const nums = [];
+	const args = process.argv.slice(2);
+	while ( args.length ) {
+		const arg = args.shift();
+		if ( arg === 'debug' || arg === '-d' ) {
+			DEBUG = true;
+		} else {
+			nums.unshift(arg);
+		}
+	}
+
+	if ( nums.length ) {
+		for ( let i = 0; i < nums.length; ++i ) {
+			console.log(`${nums[i]} ==> ${english(nums[i])}`);
+		}
+	}
+}
 
 /* english(int num)
  *
@@ -44,15 +63,32 @@ function english(num) {
 function clean_tree(dirty_ast) {
 	let place = false;
 	const clean = [];
+	let and = false;
 	while ( dirty_ast.length ) {
 		let token = dirty_ast.shift();
 		if ( token.num === null && place === false ) {
 			place = true;
+			if ( 'and' in token && token.and === true ) {
+				and = true;
+				clean[ clean.length - 1 ].and = false;
+			}
 		} else if ( token.num === null && place === true ) {
+			if ( 'and' in token && token.and === true ) {
+				clean[ clean.length - 1].and = token.and;
+				//token.and = false;
+			} else if ( 'and' in token && and === true ) {
+				token.and = false;
+				clean[ clean.length - 1 ].and = false;
+			}
 			token = null;
 		} else if ( token.num !== null ) {
 			place = false;
 		}
+
+		if ( token && 'num' in token && token.num && token.precision === 100 && and === true ) {
+			token.and = false;
+		}
+
 		if ( token ) {
 			clean.push(token);
 		}
@@ -83,7 +119,7 @@ function compile(parsed) {
 		if ( num_int && num_int in NUM_MAP ) {
 			let and = '';
 			let dash = '';
-			if ( num_int === 100 && ast.length ) {
+			if ( num_int === 100 && token.and && ast.length ) {
 				and = ' and';
 			}
 			if ( num_int > 10 && num_int < 100 && ast.length ) {
@@ -98,18 +134,16 @@ function compile(parsed) {
 			}
 			output += `${space}${NUM_MAP[num_int]}${dash}${and}`;
 		} else {
-			if ( token.text != 'thousand' ) {
-				// commas fail the euler, but I'm adding it back later
-				//output += ` ${token.text},`;
-				output += ` ${token.text}`;
+			// commas fail the euler, but I'm adding it back later
+			//output += ` ${token.text},`;
+			if ( output[ output.length - 1 ] === '-' ) {
+				output = output.slice(0, output.length - 1);
+			}
+			if ( token.and && token.and === true && ast.length > 0 ) {
+				const and = ' and';
+				output += ` ${token.text}${and}`;
 			} else {
-				if ( token.and && token.and === false && ast.length ) {
-					and = ' and';
-					has_100 = true;
-					output += ` ${token.text}${and}`;
-				} else {
-					output += ` ${token.text}`;
-				}
+				output += ` ${token.text}`;
 			}
 		}
 	}
@@ -175,7 +209,11 @@ function number_parse(num) {
 		if ( digit in NUM_MAP && digit !== significant && significant === 1 && digit >= 20 ) {
 			final = `**1 & ${digit}**`;
 			and = true;
-			parsed.ast.unshift({ num: digit, precision: precision / 10, and: and });
+			parsed.ast.unshift({
+				num: digit,
+				precision: precision / 10,
+				and: and,
+			});
 			parsed.ast.unshift({ num: 1 });
 		} else if ( next_place in NUM_MAP ) {
 			// skip digits we have a thing for
@@ -194,14 +232,24 @@ function number_parse(num) {
 		} else if ( place in NUM_MAP && significant > 1 ) {
 			final = `~~${significant} & ${place}~~`;
 			and = true;
-			parsed.ast.unshift({ num: place, precision: precision / 10, and: and });
+			parsed.ast.unshift({
+				num: place,
+				precision: precision / 10,
+				and: and,
+			});
 			parsed.ast.unshift({ num: significant });
 		} else if ( digit === significant && digit === place ) {
 			final = `<-${significant}->`;
 			parsed.ast.unshift({ num: digit, precision: precision / 10 });
 		} else if ( digit / 1000 >= 1 ) {
 			const precision_text = reducer.shift();
-			parsed.ast.unshift({ num: null, precision: precision / 10, text: precision_text, and: and });
+			parsed.ast.unshift({
+				num: null,
+				precision: precision / 10,
+				text: precision_text,
+				and: and === false ? true : false,
+			});
+			and = false;
 			precision = 1;
 			demagnify = true;
 			subtract = false;
